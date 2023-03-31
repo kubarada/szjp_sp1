@@ -5,6 +5,7 @@ import os
 import numpy as np
 
 folder_path = './documents'
+INPUT_FILE = './query_devel.xml' # zde měnit dotazy
 
 # List all files in the folder
 
@@ -21,7 +22,7 @@ for file in files:
         text = text.split(' AM ', 1)[0]
         data.append(text)
 
-with open('./query_devel.xml', 'r') as f:
+with open(INPUT_FILE, 'r') as f:
     html_doc = f.read()
     soup = BeautifulSoup(html_doc, 'html.parser')
 
