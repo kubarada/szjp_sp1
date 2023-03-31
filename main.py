@@ -1,9 +1,10 @@
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 from bs4 import BeautifulSoup
 import os
 import numpy as np
 
-folder_path = 'szjp_sp1-main/documents'
+folder_path = './documents'
 
 # List all files in the folder
 
@@ -20,14 +21,7 @@ for file in files:
         text = text.split(' AM ', 1)[0]
         data.append(text)
 
-tfidf_1 = TfidfVectorizer(norm=None,use_idf=True,smooth_idf=False) # use_idf=True
-
-sparse_doc_term_matrix_1 = tfidf_1.fit_transform(data)
-dense_doc_term_matrix_1 = sparse_doc_term_matrix_1.toarray()
-index = tfidf_1.get_feature_names_out()
-
-
-with open('szjp_sp1-main/query_devel.xml', 'r') as f:
+with open('./query_devel.xml', 'r') as f:
     html_doc = f.read()
     soup = BeautifulSoup(html_doc, 'html.parser')
 
@@ -53,23 +47,33 @@ for item in doc_lines:
 if current_text != '':
     result.append(current_text.strip())
 
-print(result)
-
 query_dict = {}
 for i in range(0, len(result), 2):
     key = result[i]
     value = result[i+1]
     query_dict[key] = value
 
-print(query_dict)
+
 query_list = query_dict.values()
-print(query_list)
+
+tfidf = TfidfVectorizer(norm=None,use_idf=True,smooth_idf=True,sublinear_tf=True,max_df=0.65)
+sparse_doc_term_matrix = tfidf.fit_transform(data)
+
+dense_doc_term_matrix = sparse_doc_term_matrix.toarray()
+index = tfidf.get_feature_names_out()
 
 
-q=tfidf_1.transform(query_list)       ### !!
+f_output = open("vystup_vyhledavaciho_programu.txt", "w")
 
-print(index)
+q = tfidf.transform(query_list) ### !!
 dense_q=q.toarray()
-print(dense_q)
+sim = cosine_similarity(sparse_doc_term_matrix, q)
+sim_T = sim.transpose()
+for i in range(len(sim_T)):
+    indexes = np.ndarray.argsort(sim_T[i])[-100:][::-1]
 
+    for j in indexes:
+        doc_name = "CACM-" + str(j + 1).zfill(4)
+        doc_eval = str(sim_T[i][j])
+        f_output.write(str(i+1) + "\t" + doc_name + "\t" + doc_eval + "\n")
 
