@@ -3,6 +3,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from bs4 import BeautifulSoup
 import os
 import numpy as np
+import re
 
 folder_path = './documents'
 INPUT_FILE = './query_devel.xml' # zde měnit dotazy
@@ -28,6 +29,10 @@ with open(INPUT_FILE, 'r') as f:
 
     # Get the text from the <ALL> tag
     doc_text = soup.find('all').get_text()
+
+
+doc_numbers = re.findall(r'<DOCNO>\s*(\d+)\s*</DOCNO>', html_doc)
+print(doc_numbers)
 
 # Print the plain text
 doc_lines = doc_text.splitlines()
@@ -76,5 +81,5 @@ for i in range(len(sim_T)):
     for j in indexes:
         doc_name = "CACM-" + str(j + 1).zfill(4)
         doc_eval = str(sim_T[i][j])
-        f_output.write(str(i+1) + "\t" + doc_name + "\t" + doc_eval + "\n")
+        f_output.write(doc_numbers[i] + "\t" + doc_name + "\t" + doc_eval + "\n")
 
